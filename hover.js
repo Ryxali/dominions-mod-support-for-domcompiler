@@ -81,8 +81,8 @@ class HoverProvider {
                 return null; // Disable hover if there's an error at the current position and code is not 'show-hover'
                 }
 
-    
-                const range = document.getWordRangeAtPosition(position);
+                const pattern = new RegExp("\\$?\\w+");
+                const range = document.getWordRangeAtPosition(position, pattern);
                 const word = document.getText(range);
                 const line = document.lineAt(position.line).text;
                 const command = this.separateCommand(line);
@@ -90,6 +90,11 @@ class HoverProvider {
                 console.log('Hovered command', command[0]);
                 console.log('Hovered value', command[1]); // fix this for multivalue commands
                 console.log('Hovered Word', word);
+
+                if(word.startsWith("$")) {
+                    const msg = `| ${word} |\n|:--------:|\n| Relative Id |`;
+                    return new vscode.Hover(msg);
+                }
                 
     
                 const nationcmds = ["restricted", "nationrebate", "notfornation", "nat", "selectnation","extramsg"]

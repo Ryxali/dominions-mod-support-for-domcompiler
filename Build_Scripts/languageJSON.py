@@ -30,6 +30,9 @@ def generate_vscode_language_json(csv_file_path, output_json_path):
             },
             {
                 "include": "#comments"
+            },
+            {
+                "include": "#relnumbers"
             }
         ],
         "repository": {
@@ -50,7 +53,7 @@ def generate_vscode_language_json(csv_file_path, output_json_path):
                 "patterns": [
                     {
                         "name": "constant.numeric.integer.decimal.dominionsmod",
-                        "match": "\\s*[[:digit:]]+\\b\\s*"
+                        "match": "\\s*\\$?[[:digit:]]+\\b\\s*"
                     }
                 ]
             },
