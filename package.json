@@ -19,7 +19,7 @@
       {
         "id": "dominionsmod",
         "aliases": ["Dominions 6 Mod", "dominionsmod"],
-        "extensions": [".dm"],
+        "extensions": [".dm", ".dme"],
         "configuration": "./language-configuration.json"
       }
     ],
