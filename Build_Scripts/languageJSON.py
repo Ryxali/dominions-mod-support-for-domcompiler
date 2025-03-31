@@ -32,7 +32,7 @@ def generate_vscode_language_json(csv_file_path, output_json_path):
                 "include": "#comments"
             },
             {
-                "include": "#relnumbers"
+                "include": "#magicpath"
             }
         ],
         "repository": {
@@ -61,6 +61,14 @@ def generate_vscode_language_json(csv_file_path, output_json_path):
                 "name": "comment.line.double-dash.dominionsmod",
                 "begin": "--",
                 "end": "$\n"
+            },
+            "magicpath": {
+                "patterns": [
+                    {
+                        "name": "string.magic.dominionsmod",
+                        "match": "\\s*[a-zA-Z0-9]+\\s*"
+                    }
+                ]
             }
         }
     }

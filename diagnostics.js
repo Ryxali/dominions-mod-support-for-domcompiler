@@ -542,6 +542,83 @@ checkTwoCustomRangeValues(lines, diagnostics, command, minValueSet1, maxValueSet
     }
 }
 
+
+checkValuesRegex(lines, diagnostics, command, expr) {
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        if (line.startsWith(command)) {
+            console.log(line);
+            const fieldMatch = line.substring(command.length).match(expr);
+            console.log(fieldMatch);
+            if(fieldMatch) {
+            }
+            else {
+                const range = new vscode.Range(
+                    new vscode.Position(i, line.indexOf(command)),
+                    new vscode.Position(i, line.indexOf(command) + command.length)
+                );
+                const diagnostic = new vscode.Diagnostic(
+                    range,
+                    `Missing or invalid values for ${command} command`,
+                    vscode.DiagnosticSeverity.Error
+                );
+                diagnostic.code = 'show-hover';
+                diagnostics.push(diagnostic);
+            }
+        }
+    }
+}
+
+checkTwoCustomRangeValuesMagic(lines, diagnostics, command, minValueSet1, maxValueSet1, minValueSet2, maxValueSet2, legalValuesSet1 = [], legalValuesSet2 = []) {
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        if (line.startsWith(command)) {
+            const valueMatches = line.match(/(-?\d+)/g);
+
+            if (valueMatches && valueMatches.length >= 2) {
+                const value1 = parseInt(valueMatches[0]);
+                const value2 = parseInt(valueMatches[1]);
+
+                if (
+                    ((value1 < minValueSet1 || value1 > maxValueSet1) && (legalValuesSet1.length === 0 || !legalValuesSet1.includes(value1))) ||
+                    ((value2 < minValueSet2 || value2 > maxValueSet2) && (legalValuesSet2.length === 0 || !legalValuesSet2.includes(value2)))
+                ) {
+                    const range = new vscode.Range(
+                        new vscode.Position(i, line.indexOf(valueMatches[0])),
+                        new vscode.Position(i, line.indexOf(valueMatches[1]) + valueMatches[1].length)
+                    );
+                    const diagnostic = new vscode.Diagnostic(
+                        range,
+                        `Values for ${command} should be within specified ranges or legal alternatives`,
+                        vscode.DiagnosticSeverity.Error
+                    );
+                    diagnostics.push(diagnostic);
+                }
+            } else {
+                const manaSymbolMatches = line.match(/#\S+\s+[fFaAwWeEnNdDsSgGbBhH][fFaAwWeEnNdDsSgGbBhH0-9]*(\s*(--.*)?)?$/);
+                if(manaSymbolMatches) {
+
+                }
+                else {
+                    const range = new vscode.Range(
+                        new vscode.Position(i, line.indexOf(command)),
+                        new vscode.Position(i, line.indexOf(command) + command.length)
+                    );
+                    const diagnostic = new vscode.Diagnostic(
+                        range,
+                        `Missing or invalid values for ${command} command`,
+                        vscode.DiagnosticSeverity.Error
+                    );
+                    diagnostic.code = 'show-hover';
+                    diagnostics.push(diagnostic);
+                }
+            }
+        }
+    }
+}
+
 checkValueRangeAndSet(lines, diagnostics, command, minValue, maxValue, allowedValues) {
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
@@ -661,12 +738,12 @@ checkQuotedTextLength(lines, diagnostics, command, maxLength) {
         //make a custom checker for #path, needs two values, just check mod manual this is complicated cuz there's two #paths. will need to check for command after previous #end
         this.checkCustomRangeValues(lines, diagnostics, '#selectnametype', 100, 399);
         this.checkCustomRangeValues(lines, diagnostics, '#newsite', 1500, 1998, true);
-        this.checkTwoCustomRangeValues(lines, diagnostics, '#gems', 0, 8, 0, 99);
+        this.checkTwoCustomRangeValuesMagic(lines, diagnostics, '#gems', 0, 8, 0, 99);
         this.checkCustomRangeValues(lines, diagnostics, '#level', 0, 4);
         this.checkCustomRangeValues(lines, diagnostics, '#selectnation', 5, 499);
         //this.checkCustomRangeValues(lines, diagnostics, '#victorycondition',null,null,false,true,[76,89]);
         this.checkCustomRangeValues(lines, diagnostics, '#fort', 1, 29);
-        this.checkTwoCustomRangeValues(lines, diagnostics, '#magicskill', 0, 9, 1, 10, [50,51,52,53]);
+        this.checkTwoCustomRangeValuesMagic(lines, diagnostics, '#magicskill', 0, 9, 1, 10, [50,51,52,53]);
         // create a custom checker for #custommagic, needs two values 1st is path mask (from table 18) and 2nd is the chance (1 to 100)
         this.checkCustomRangeValues(lines, diagnostics, '#mainpath', -1, 9);
         this.checkCustomRangeValues(lines, diagnostics, '#secondarypath', -1, 9);
