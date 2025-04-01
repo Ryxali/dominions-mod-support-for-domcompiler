@@ -51,7 +51,7 @@ class ErrorDiagnosticProvider {
     
             // Convert numeric strings to numbers (floats or integers)
             const parsedValues = values.map(value => {
-                const numericValue = /^-?\d+(\.\d+)?$/.test(value) ? parseFloat(value) : value;
+                const numericValue = /^(?:\$?)-?\d+(\.\d+)?$/.test(value) ? parseFloat(value) : value;
                 return isNaN(numericValue) ? value : numericValue;
             });
     
@@ -233,7 +233,7 @@ class ErrorDiagnosticProvider {
                             vscode.DiagnosticSeverity.Error
                         );
                         diagnostics.push(diagnostic);
-                    } else if (allowString && typeof value === 'string' && value !== matchedValue[0]) {
+                    } else if (allowString && typeof value === 'string' && value !== matchedValue[0] && !value.startsWith('$')) {
                         // Check if the string is wrapped in quotes
                         const isQuotedString = /^".*"$/.test(value);
     
@@ -338,7 +338,7 @@ class ErrorDiagnosticProvider {
                             vscode.DiagnosticSeverity.Error
                         );
                         diagnostics.push(diagnostic);
-                    } else if (allowString && typeof value === 'string' && value !== matchedValue[0]) {
+                    } else if (allowString && typeof value === 'string' && value !== matchedValue[0] && !value.startsWith('$')) {
                         // Check if the string is wrapped in quotes
                         const isQuotedString = /^".*"$/.test(value);
     
