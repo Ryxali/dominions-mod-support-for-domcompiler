@@ -499,107 +499,59 @@ class ErrorDiagnosticProvider {
     
 
 
-checkTwoCustomRangeValues(lines, diagnostics, command, minValueSet1, maxValueSet1, minValueSet2, maxValueSet2, legalValuesSet1 = [], legalValuesSet2 = []) {
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
+    checkTwoCustomRangeValues(lines, diagnostics, command, minValueSet1, maxValueSet1, minValueSet2, maxValueSet2, legalValuesSet1 = [], legalValuesSet2 = []) {
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
 
-        if (line.startsWith(command)) {
-            const valueMatches = line.match(/(-?\d+)/g);
+            if (line.startsWith(command)) {
+                const valueMatches = line.match(/(-?\d+)/g);
 
-            if (valueMatches && valueMatches.length >= 2) {
-                const value1 = parseInt(valueMatches[0]);
-                const value2 = parseInt(valueMatches[1]);
+                if (valueMatches && valueMatches.length >= 2) {
+                    const value1 = parseInt(valueMatches[0]);
+                    const value2 = parseInt(valueMatches[1]);
 
-                if (
-                    ((value1 < minValueSet1 || value1 > maxValueSet1) && (legalValuesSet1.length === 0 || !legalValuesSet1.includes(value1))) ||
-                    ((value2 < minValueSet2 || value2 > maxValueSet2) && (legalValuesSet2.length === 0 || !legalValuesSet2.includes(value2)))
-                ) {
+                    if (
+                        ((value1 < minValueSet1 || value1 > maxValueSet1) && (legalValuesSet1.length === 0 || !legalValuesSet1.includes(value1))) ||
+                        ((value2 < minValueSet2 || value2 > maxValueSet2) && (legalValuesSet2.length === 0 || !legalValuesSet2.includes(value2)))
+                    ) {
+                        const range = new vscode.Range(
+                            new vscode.Position(i, line.indexOf(valueMatches[0])),
+                            new vscode.Position(i, line.indexOf(valueMatches[1]) + valueMatches[1].length)
+                        );
+                        const diagnostic = new vscode.Diagnostic(
+                            range,
+                            `Values for ${command} should be within specified ranges or legal alternatives`,
+                            vscode.DiagnosticSeverity.Error
+                        );
+                        diagnostics.push(diagnostic);
+                    }
+                } else {
                     const range = new vscode.Range(
-                        new vscode.Position(i, line.indexOf(valueMatches[0])),
-                        new vscode.Position(i, line.indexOf(valueMatches[1]) + valueMatches[1].length)
+                        new vscode.Position(i, line.indexOf(command)),
+                        new vscode.Position(i, line.indexOf(command) + command.length)
                     );
                     const diagnostic = new vscode.Diagnostic(
                         range,
-                        `Values for ${command} should be within specified ranges or legal alternatives`,
+                        `Missing or invalid values for ${command} command`,
                         vscode.DiagnosticSeverity.Error
                     );
+                    diagnostic.code = 'show-hover';
                     diagnostics.push(diagnostic);
                 }
-            } else {
-                const range = new vscode.Range(
-                    new vscode.Position(i, line.indexOf(command)),
-                    new vscode.Position(i, line.indexOf(command) + command.length)
-                );
-                const diagnostic = new vscode.Diagnostic(
-                    range,
-                    `Missing or invalid values for ${command} command`,
-                    vscode.DiagnosticSeverity.Error
-                );
-                diagnostic.code = 'show-hover';
-                diagnostics.push(diagnostic);
             }
         }
     }
-}
 
 
-checkValuesRegex(lines, diagnostics, command, expr) {
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
+    checkValuesRegex(lines, diagnostics, command, expr) {
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
 
-        if (line.startsWith(command)) {
-            console.log(line);
-            const fieldMatch = line.substring(command.length).match(expr);
-            console.log(fieldMatch);
-            if(fieldMatch) {
-            }
-            else {
-                const range = new vscode.Range(
-                    new vscode.Position(i, line.indexOf(command)),
-                    new vscode.Position(i, line.indexOf(command) + command.length)
-                );
-                const diagnostic = new vscode.Diagnostic(
-                    range,
-                    `Missing or invalid values for ${command} command`,
-                    vscode.DiagnosticSeverity.Error
-                );
-                diagnostic.code = 'show-hover';
-                diagnostics.push(diagnostic);
-            }
-        }
-    }
-}
-
-checkTwoCustomRangeValuesMagic(lines, diagnostics, command, minValueSet1, maxValueSet1, minValueSet2, maxValueSet2, legalValuesSet1 = [], legalValuesSet2 = []) {
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-
-        if (line.startsWith(command)) {
-            const valueMatches = line.match(/(-?\d+)/g);
-
-            if (valueMatches && valueMatches.length >= 2) {
-                const value1 = parseInt(valueMatches[0]);
-                const value2 = parseInt(valueMatches[1]);
-
-                if (
-                    ((value1 < minValueSet1 || value1 > maxValueSet1) && (legalValuesSet1.length === 0 || !legalValuesSet1.includes(value1))) ||
-                    ((value2 < minValueSet2 || value2 > maxValueSet2) && (legalValuesSet2.length === 0 || !legalValuesSet2.includes(value2)))
-                ) {
-                    const range = new vscode.Range(
-                        new vscode.Position(i, line.indexOf(valueMatches[0])),
-                        new vscode.Position(i, line.indexOf(valueMatches[1]) + valueMatches[1].length)
-                    );
-                    const diagnostic = new vscode.Diagnostic(
-                        range,
-                        `Values for ${command} should be within specified ranges or legal alternatives`,
-                        vscode.DiagnosticSeverity.Error
-                    );
-                    diagnostics.push(diagnostic);
-                }
-            } else {
-                const manaSymbolMatches = line.match(/#\S+\s+[fFaAwWeEnNdDsSgGbBhH][fFaAwWeEnNdDsSgGbBhH0-9]*(\s*(--.*)?)?$/);
-                if(manaSymbolMatches) {
-
+            if (line.startsWith(command)) {
+                console.log(line);
+                const fieldMatch = line.substring(command.length).match(expr);
+                console.log(fieldMatch);
+                if(fieldMatch) {
                 }
                 else {
                     const range = new vscode.Range(
@@ -617,104 +569,189 @@ checkTwoCustomRangeValuesMagic(lines, diagnostics, command, minValueSet1, maxVal
             }
         }
     }
-}
 
-checkValueRangeAndSet(lines, diagnostics, command, minValue, maxValue, allowedValues) {
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
+    checkTwoCustomRangeValuesMagic(lines, diagnostics, command, minValueSet1, maxValueSet1, minValueSet2, maxValueSet2, legalValuesSet1 = [], legalValuesSet2 = []) {
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
 
-        if (line.startsWith(command)) {
-            const valueMatches = line.match(/(-?\d+)/g);
+            if (line.startsWith(command)) {
+                const valueMatches = line.match(/(-?\d+)/g);
 
-            if (valueMatches && valueMatches.length >= 2) {
-                const value1 = parseInt(valueMatches[0]);
-                const value2 = parseInt(valueMatches[1]);
+                if (valueMatches && valueMatches.length >= 2) {
+                    const value1 = parseInt(valueMatches[0]);
+                    const value2 = parseInt(valueMatches[1]);
 
-                // Check if value1 is within the specified numeric range
-                // and if value2 is in the allowed set.
-                if ((value1 < minValue || value1 > maxValue) || !allowedValues.includes(value2)) {
-                    const range = new vscode.Range(
-                        new vscode.Position(i, line.indexOf(valueMatches[0])),
-                        new vscode.Position(i, line.indexOf(valueMatches[1]) + valueMatches[1].length)
-                    );
-                    const diagnostic = new vscode.Diagnostic(
-                        range,
-                        `The first value of ${command} must be between ${minValue} and ${maxValue}, and the second must be one of: ${allowedValues.join(', ')}.`,
-                        vscode.DiagnosticSeverity.Error
-                    );
-                    diagnostics.push(diagnostic);
-                }
-            } else {
-                // Handle cases where either value is missing or invalid
-                const range = new vscode.Range(
-                    new vscode.Position(i, line.indexOf(command)),
-                    new vscode.Position(i, line.indexOf(command) + command.length)
-                );
-                const diagnostic = new vscode.Diagnostic(
-                    range,
-                    `Missing or invalid values for ${command} command.`,
-                    vscode.DiagnosticSeverity.Error
-                );
-                diagnostics.push(diagnostic);
-            }
-        }
-    }
-}
-
-checkQuotedTextLength(lines, diagnostics, command, maxLength) {
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-
-        if (line.startsWith(command)) {
-            const quoteStartIndex = line.indexOf('"');
-            if (quoteStartIndex !== -1) {
-                const quoteEndIndex = line.indexOf('"', quoteStartIndex + 1);
-                if (quoteEndIndex !== -1) {
-                    const quotedText = line.substring(quoteStartIndex + 1, quoteEndIndex);
-
-                    if (quotedText.length > maxLength) {
+                    if (
+                        ((value1 < minValueSet1 || value1 > maxValueSet1) && (legalValuesSet1.length === 0 || !legalValuesSet1.includes(value1))) ||
+                        ((value2 < minValueSet2 || value2 > maxValueSet2) && (legalValuesSet2.length === 0 || !legalValuesSet2.includes(value2)))
+                    ) {
                         const range = new vscode.Range(
-                            new vscode.Position(i, quoteStartIndex),
-                            new vscode.Position(i, quoteEndIndex + 1)
+                            new vscode.Position(i, line.indexOf(valueMatches[0])),
+                            new vscode.Position(i, line.indexOf(valueMatches[1]) + valueMatches[1].length)
                         );
                         const diagnostic = new vscode.Diagnostic(
                             range,
-                            `The quoted text after ${command} exceeds the maximum allowed length of ${maxLength} characters. Your current message is ${quotedText.length}.`,
+                            `Values for ${command} should be within specified ranges or legal alternatives`,
                             vscode.DiagnosticSeverity.Error
                         );
                         diagnostics.push(diagnostic);
                     }
                 } else {
-                    // No closing quote found
+                    const manaSymbolMatches = line.match(/#\S+\s+[fFaAwWeEnNdDsSgGbBhH][fFaAwWeEnNdDsSgGbBhH0-9]*(\s*(--.*)?)?$/);
+                    if(manaSymbolMatches) {
+
+                    }
+                    else {
+                        const range = new vscode.Range(
+                            new vscode.Position(i, line.indexOf(command)),
+                            new vscode.Position(i, line.indexOf(command) + command.length)
+                        );
+                        const diagnostic = new vscode.Diagnostic(
+                            range,
+                            `Missing or invalid values for ${command} command`,
+                            vscode.DiagnosticSeverity.Error
+                        );
+                        diagnostic.code = 'show-hover';
+                        diagnostics.push(diagnostic);
+                    }
+                }
+            }
+        }
+    }
+
+    checkValueRangeAndSet(lines, diagnostics, command, minValue, maxValue, allowedValues) {
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+
+            if (line.startsWith(command)) {
+                const valueMatches = line.match(/(-?\d+)/g);
+
+                if (valueMatches && valueMatches.length >= 2) {
+                    const value1 = parseInt(valueMatches[0]);
+                    const value2 = parseInt(valueMatches[1]);
+
+                    // Check if value1 is within the specified numeric range
+                    // and if value2 is in the allowed set.
+                    if ((value1 < minValue || value1 > maxValue) || !allowedValues.includes(value2)) {
+                        const range = new vscode.Range(
+                            new vscode.Position(i, line.indexOf(valueMatches[0])),
+                            new vscode.Position(i, line.indexOf(valueMatches[1]) + valueMatches[1].length)
+                        );
+                        const diagnostic = new vscode.Diagnostic(
+                            range,
+                            `The first value of ${command} must be between ${minValue} and ${maxValue}, and the second must be one of: ${allowedValues.join(', ')}.`,
+                            vscode.DiagnosticSeverity.Error
+                        );
+                        diagnostics.push(diagnostic);
+                    }
+                } else {
+                    // Handle cases where either value is missing or invalid
                     const range = new vscode.Range(
                         new vscode.Position(i, line.indexOf(command)),
                         new vscode.Position(i, line.indexOf(command) + command.length)
                     );
                     const diagnostic = new vscode.Diagnostic(
                         range,
-                        `Missing closing quote for ${command} command.`,
+                        `Missing or invalid values for ${command} command.`,
                         vscode.DiagnosticSeverity.Error
                     );
                     diagnostics.push(diagnostic);
                 }
-            } else {
-                // No opening quote found
-                const range = new vscode.Range(
-                    new vscode.Position(i, line.indexOf(command)),
-                    new vscode.Position(i, line.indexOf(command) + command.length)
-                );
-                const diagnostic = new vscode.Diagnostic(
-                    range,
-                    `No quoted text found after ${command} command.`,
-                    vscode.DiagnosticSeverity.Error
-                );
-                diagnostics.push(diagnostic);
             }
         }
     }
-}
 
+    checkQuotedTextLength(lines, diagnostics, command, maxLength) {
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
 
+            if (line.startsWith(command)) {
+                const quoteStartIndex = line.indexOf('"');
+                if (quoteStartIndex !== -1) {
+                    const quoteEndIndex = line.indexOf('"', quoteStartIndex + 1);
+                    if (quoteEndIndex !== -1) {
+                        const quotedText = line.substring(quoteStartIndex + 1, quoteEndIndex);
+
+                        if (quotedText.length > maxLength) {
+                            const range = new vscode.Range(
+                                new vscode.Position(i, quoteStartIndex),
+                                new vscode.Position(i, quoteEndIndex + 1)
+                            );
+                            const diagnostic = new vscode.Diagnostic(
+                                range,
+                                `The quoted text after ${command} exceeds the maximum allowed length of ${maxLength} characters. Your current message is ${quotedText.length}.`,
+                                vscode.DiagnosticSeverity.Error
+                            );
+                            diagnostics.push(diagnostic);
+                        }
+                    } else {
+                        // No closing quote found
+                        const range = new vscode.Range(
+                            new vscode.Position(i, line.indexOf(command)),
+                            new vscode.Position(i, line.indexOf(command) + command.length)
+                        );
+                        const diagnostic = new vscode.Diagnostic(
+                            range,
+                            `Missing closing quote for ${command} command.`,
+                            vscode.DiagnosticSeverity.Error
+                        );
+                        diagnostics.push(diagnostic);
+                    }
+                } else {
+                    // No opening quote found
+                    const range = new vscode.Range(
+                        new vscode.Position(i, line.indexOf(command)),
+                        new vscode.Position(i, line.indexOf(command) + command.length)
+                    );
+                    const diagnostic = new vscode.Diagnostic(
+                        range,
+                        `No quoted text found after ${command} command.`,
+                        vscode.DiagnosticSeverity.Error
+                    );
+                    diagnostics.push(diagnostic);
+                }
+            }
+        }
+    }
+
+    async checkFilePaths(lines, diagnostics, command) {
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if(line.startsWith(command)) {
+                // #spr1 "haha" -- eae
+                const pathString = lines[i].match(/(?<=^#\S+\s")[^"]+(?=")/);
+                if(pathString) {
+                    const path = pathString[0];
+                    const found  = await vscode.workspace.findFiles(`**/${path}`);
+                    if(found.length == 0)
+                    {
+                        const range = new vscode.Range(
+                            new vscode.Position(i, line.indexOf(command)),
+                            new vscode.Position(i, line.indexOf(command) + command.length)
+                        );
+                        const diagnostic = new vscode.Diagnostic(
+                            range,
+                            `Path '${path}' not found for ${command} command.`,
+                            vscode.DiagnosticSeverity.Error
+                        );
+                        diagnostics.push(diagnostic);
+                    }
+                } else {
+                    const range = new vscode.Range(
+                        new vscode.Position(i, line.indexOf(command)),
+                        new vscode.Position(i, line.indexOf(command) + command.length)
+                    );
+                    const diagnostic = new vscode.Diagnostic(
+                        range,
+                        `No quoted text found after ${command} command.`,
+                        vscode.DiagnosticSeverity.Error
+                    );
+                    diagnostics.push(diagnostic);
+                }
+            }
+        }
+    }
 
     async analyzeDocument(document, diagnosticCollection, startValues) {
         const diagnostics = [];
@@ -988,6 +1025,14 @@ checkQuotedTextLength(lines, diagnostics, command, maxLength) {
         this.checkCustomRangeValues(lines, diagnostics, '#caveres ', 1, 500);
         this.checkCustomRangeValues(lines, diagnostics, '#caverecpt ', 1, 500);
 
+        await this.checkFilePaths(lines, diagnostics, "#spr1");
+        await this.checkFilePaths(lines, diagnostics, "#spr2");
+        await this.checkFilePaths(lines, diagnostics, "#xspr1");
+        await this.checkFilePaths(lines, diagnostics, "#xspr2");
+        await this.checkFilePaths(lines, diagnostics, "#unmountedspr1");
+        await this.checkFilePaths(lines, diagnostics, "#unmountedspr2");
+        await this.checkFilePaths(lines, diagnostics, "#indepflag");
+        await this.checkFilePaths(lines, diagnostics, "#flag");
         //create monster diagnostics including transform and forcetransform
 /*      These all need revision because the trailing number is being counted as the value for the command.
         this.checkCustomRangeValues(lines, diagnostics, "#path0", 0, 8);
